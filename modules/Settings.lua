@@ -6,6 +6,7 @@ _G.SETTINGS = {
     AimIsMouse = true,
     HeadOffset = 0.28,
     BoxVisible = true,
+    SkeletonEnabled = true, -- NOWE
     NametagsVisible = true,
     HealthbarVisible = true,
     DistanceVisible = false,
