@@ -1,4 +1,3 @@
--- [[ SHADOW HUB: SETTINGS MODULE ]] --
 _G.SETTINGS = {
     AimbotEnabled = true,
     AimSmooth = 0.73,
@@ -10,7 +9,7 @@ _G.SETTINGS = {
     NametagsVisible = true,
     HealthbarVisible = true,
     DistanceVisible = false,
-    AccentColor = Color3.fromRGB(255, 60, 60)
+    AccentColor = Color3.fromRGB(255, 60, 60),
+    MenuKey = Enum.KeyCode.Insert
 }
-
 return _G.SETTINGS
