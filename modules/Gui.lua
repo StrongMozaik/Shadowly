@@ -5,11 +5,11 @@ local ParentContainer = (gethui and gethui()) or game:GetService("CoreGui")
 if ParentContainer:FindFirstChild("ShadowElite_UI") then ParentContainer:FindFirstChild("ShadowElite_UI"):Destroy() end
 
 local Screen = Instance.new("ScreenGui", ParentContainer); Screen.Name = "ShadowElite_UI"; Screen.IgnoreGuiInset = true
-local Main = Instance.new("Frame", Screen); Main.Size = UDim2.new(0, 400, 0, 480); Main.Position = UDim2.new(0.5, -200, 0.5, -240); Main.BackgroundColor3 = Color3.fromRGB(12, 12, 14); Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
+local Main = Instance.new("Frame", Screen); Main.Size = UDim2.new(0, 400, 0, 450); Main.Position = UDim2.new(0.5, -200, 0.5, -225); Main.BackgroundColor3 = Color3.fromRGB(12, 12, 14); Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
 local MainStroke = Instance.new("UIStroke", Main); MainStroke.Color = _G.SETTINGS.AccentColor; MainStroke.Thickness = 1.5
 
 local Header = Instance.new("Frame", Main); Header.Size = UDim2.new(1, 0, 0, 45); Header.BackgroundTransparency = 1
-local Title = Instance.new("TextLabel", Header); Title.Text = "  RIVALS | SHADOW ELITE v11.8"; Title.Size = UDim2.new(1, 0, 1, 0); Title.TextColor3 = Color3.new(1,1,1); Title.Font = Enum.Font.GothamBold; Title.TextSize = 14; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.BackgroundTransparency = 1
+local Title = Instance.new("TextLabel", Header); Title.Text = "  RIVALS | SHADOW ELITE v11.7"; Title.Size = UDim2.new(1, 0, 1, 0); Title.TextColor3 = Color3.new(1,1,1); Title.Font = Enum.Font.GothamBold; Title.TextSize = 14; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.BackgroundTransparency = 1
 
 local Content = Instance.new("ScrollingFrame", Main); Content.Size = UDim2.new(1, -20, 1, -65); Content.Position = UDim2.new(0, 10, 0, 50); Content.BackgroundTransparency = 1; Content.ScrollBarThickness = 0; Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Instance.new("UIListLayout", Content).Padding = UDim.new(0, 8)
@@ -28,16 +28,13 @@ local function AddSlider(text, min, max, key)
     SliderBg.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then local move; move = UIS.InputChanged:Connect(function(m) if m.UserInputType == Enum.UserInputType.MouseMovement or m.UserInputType == Enum.UserInputType.Touch then local rel = math.clamp((m.Position.X - SliderBg.AbsolutePosition.X) / SliderBg.AbsoluteSize.X, 0, 1); local val = math.floor((min + (max - min) * rel) * 100) / 100; SliderFill.Size = UDim2.new(rel, 0, 1, 0); SLabel.Text = "  " .. text .. ": " .. val; _G.SETTINGS[key] = val end end) local endc; endc = UIS.InputEnded:Connect(function(e) if e.UserInputType == Enum.UserInputType.MouseButton1 or e.UserInputType == Enum.UserInputType.Touch then move:Disconnect(); endc:Disconnect() end end) end end)
 end
 
--- SEKACJA COMBAT
 AddToggle("Smart Sticky Aimbot", "AimbotEnabled")
 AddSlider("Smoothness", 0.01, 1.0, "AimSmooth")
 AddSlider("FOV Size", 50, 600, "FOV")
-
--- SEKCJA VISUALS
+AddSlider("Head Height Offset", 0, 0.5, "HeadOffset")
 AddToggle("CS:GO Box ESP", "BoxVisible")
 AddToggle("Skeleton ESP (Lite)", "SkeletonEnabled")
 AddToggle("Tracers (od myszki)", "TracersEnabled")
-AddToggle("Hand Neon Chams", "HandChamsEnabled") -- NOWE
 AddToggle("ESP: Pasek Zycia", "HealthbarVisible")
 AddToggle("ESP: Nazwy + HP", "NametagsVisible")
 
