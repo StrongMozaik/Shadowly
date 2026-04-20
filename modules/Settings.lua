@@ -1,12 +1,12 @@
 _G.SETTINGS = {
     AimbotEnabled = true,
-    AimSmooth = 0.73,
-    FOV = 150,
+    AimSmooth = 0.80,
+    FOV = 90,
     AimKey = Enum.UserInputType.MouseButton1,
     AimIsMouse = true,
     HeadOffset = 0.28,
     BoxVisible = true,
-    SkeletonEnabled = true,
+    SkeletonEnabled = false,
     TracersEnabled = true, -- NOWOŚĆ
     NametagsVisible = true,
     HealthbarVisible = true,
