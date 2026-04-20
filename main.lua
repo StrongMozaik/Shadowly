@@ -8,7 +8,6 @@ local function Load(module)
     if success then
         local func, err = loadstring(source)
         if func then
-            print("Shadowly: Loaded " .. module)
             return func()
         else
             warn("Shadowly: Blad kompilacji " .. module .. ": " .. err)
@@ -22,6 +21,7 @@ print("Shadowly: Inicjalizacja...")
 Load("Settings")
 Load("Aimbot")
 Load("ESP")
-Load("SkeletonESP") -- Nowy moduł
+Load("SkeletonESP")
+Load("Tracers") -- NOWOŚĆ
 Load("Gui")
-print("Shadowly: System gotowy!")
+print("Shadowly: Zaladowano wszystko!")
