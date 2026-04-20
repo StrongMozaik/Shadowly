@@ -9,7 +9,7 @@ local TracerCache = {}
 local function CreateTracer(p)
     local line = Drawing.new("Line")
     line.Thickness = 1
-    line.Transparency = 1
+    line.Transparency = 0.7
     line.Visible = false
     line.Color = _G.SETTINGS.AccentColor
     TracerCache[p] = line
@@ -17,9 +17,6 @@ end
 
 for _, p in pairs(Players:GetPlayers()) do if p ~= LP then CreateTracer(p) end end
 Players.PlayerAdded:Connect(function(p) if p ~= LP then CreateTracer(p) end end)
-Players.PlayerRemoving:Connect(function(p) 
-    if TracerCache[p] then TracerCache[p]:Remove(); TracerCache[p] = nil end 
-end)
 
 RunService.RenderStepped:Connect(function()
     local MousePos = UIS:GetMouseLocation()
@@ -33,8 +30,8 @@ RunService.RenderStepped:Connect(function()
             local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
 
             if onScreen then
-                line.From = MousePos -- Start linii w miejscu myszki (środek koła FOV)
-                line.To = Vector2.new(screenPos.X, screenPos.Y) -- Koniec na przeciwniku
+                line.From = MousePos -- Start w środku koła FOV (myszka)
+                line.To = Vector2.new(screenPos.X, screenPos.Y)
                 line.Color = _G.SETTINGS.AccentColor
                 line.Visible = true
             else
