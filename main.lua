@@ -2,10 +2,19 @@
 local RawBase = "https://raw.githubusercontent.com/StrongMozaik/Shadowly/main/modules/"
 
 local function Load(module)
-    local success, result = pcall(function()
-        return loadstring(game:HttpGet(RawBase .. module .. ".lua"))()
-    end)
-    if not success then warn("Shadowly: Błąd ładowania " .. module .. ": " .. result) end
+    local url = RawBase .. module .. ".lua"
+    local success, source = pcall(function() return game:HttpGet(url) end)
+    
+    if success then
+        local func, err = loadstring(source)
+        if func then
+            return func()
+        else
+            warn("Shadowly: Blad kompilacji " .. module .. ": " .. err)
+        end
+    else
+        warn("Shadowly: Nie znaleziono modulu " .. module)
+    end
 end
 
 print("Shadowly: Inicjalizacja...")
@@ -13,4 +22,4 @@ Load("Settings")
 Load("Aimbot")
 Load("ESP")
 Load("Gui")
-print("Shadowly: Załadowano pomyślnie!")
+print("Shadowly: Zaladowano!")
