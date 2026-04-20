@@ -14,4 +14,5 @@ Load("Aimbot")
 Load("ESP")
 Load("SkeletonESP")
 Load("Tracers")
+Load("Visuals") -- DODANO
 Load("Gui")
