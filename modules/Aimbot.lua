@@ -25,22 +25,18 @@ end
 
 RunService.RenderStepped:Connect(function()
     local IsPressed = _G.SETTINGS.AimIsMouse and UIS:IsMouseButtonPressed(_G.SETTINGS.AimKey) or UIS:IsKeyDown(_G.SETTINGS.AimKey)
-    
     if _G.SETTINGS.AimbotEnabled and IsPressed then
         local mouse = UIS:GetMouseLocation()
         local bestTarget, bestDist = GetClosestTarget()
-
         if not LockedTarget or (LockedTarget.Character and LockedTarget.Character.Humanoid.Health <= 0) then
             LockedTarget = bestTarget
         else
-            -- Smart Switch: Jeśli inny wróg jest znacznie bliżej myszki, przełącz się
             local currentPos = Camera:WorldToViewportPoint(LockedTarget.Character.HumanoidRootPart.Position)
             local currentDist = (Vector2.new(currentPos.X, currentPos.Y) - mouse).Magnitude
             if bestTarget and bestTarget ~= LockedTarget and bestDist < (currentDist * 0.7) then
                 LockedTarget = bestTarget
             end
         end
-
         if LockedTarget and LockedTarget.Character then
             local hrp = LockedTarget.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
