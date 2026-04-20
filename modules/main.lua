@@ -1,15 +1,16 @@
--- [[ SHADOW HUB: MAIN LOADER ]] --
-local base_url = "https://raw.githubusercontent.com/StrongMozaik/Shadowly/main/"
+-- [[ SHADOW HUB: OFFICIAL LOADER ]] --
+local RawBase = "https://raw.githubusercontent.com/StrongMozaik/Shadowly/main/modules/"
 
-print("Shadow Hub: Loading...")
+local function Load(module)
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet(RawBase .. module .. ".lua"))()
+    end)
+    if not success then warn("Shadowly: Error loading " .. module .. ": " .. result) end
+end
 
--- 1. Załaduj ustawienia
-loadstring(game:HttpGet(base_url .. "modules/settings.lua"))()
-
--- 2. Załaduj logikę i ESP
-loadstring(game:HttpGet(base_url .. "modules/logic.lua"))()
-
--- 3. Załaduj Menu UI (jeśli masz osobny plik)
--- loadstring(game:HttpGet(base_url .. "modules/ui.lua"))()
-
-print("Shadow Hub: Successfully Loaded!")
+print("Shadowly: Initializing...")
+Load("Settings") -- Najpierw konfiguracja
+Load("Aimbot")   -- Potem system celowania
+Load("ESP")      -- Potem wizualizacje
+Load("Gui")      -- Na końcu menu
+print("Shadowly: Successfully Loaded!")
