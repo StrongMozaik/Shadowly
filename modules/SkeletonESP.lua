@@ -1,25 +1,19 @@
--- [[ SHADOW HUB: SKELETON ESP MODULE ]] --
+-- [[ SHADOW HUB: SKELETON ESP LITE ]] --
 local Players = game:GetService("Players")
 local Camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 local LP = Players.LocalPlayer
 local SkeletonCache = {}
+local SkipFrame = 0
 
--- Definicja połączeń między stawami (pary części ciała)
+-- Uproszczone połączenia (Tylko najważniejsze stawy)
 local Connections = {
-    -- Tułów i Głowa
     {"Head", "UpperTorso"},
     {"UpperTorso", "LowerTorso"},
-    -- Ramiona
     {"UpperTorso", "LeftUpperArm"},
-    {"LeftUpperArm", "LeftLowerArm"},
     {"UpperTorso", "RightUpperArm"},
-    {"RightUpperArm", "RightLowerArm"},
-    -- Nogi
     {"LowerTorso", "LeftUpperLeg"},
-    {"LeftUpperLeg", "LeftLowerLeg"},
-    {"LowerTorso", "RightUpperLeg"},
-    {"RightUpperLeg", "RightLowerLeg"}
+    {"LowerTorso", "RightUpperLeg"}
 }
 
 local function CreateSkeleton(p)
@@ -27,65 +21,48 @@ local function CreateSkeleton(p)
     for i = 1, #Connections do
         local l = Drawing.new("Line")
         l.Thickness = 1
-        l.Transparency = 1
+        l.Transparency = 0.8 -- Lekko przezroczyste, by mniej biło po oczach
         l.Visible = false
-        l.Color = _G.SETTINGS.AccentColor
         lines[i] = l
     end
     SkeletonCache[p] = lines
 end
 
--- Obsługa dołączania i wychodzenia graczy
-for _, p in pairs(Players:GetPlayers()) do
-    if p ~= LP then CreateSkeleton(p) end
-end
+for _, p in pairs(Players:GetPlayers()) do if p ~= LP then CreateSkeleton(p) end end
+Players.PlayerAdded:Connect(function(p) if p ~= LP then CreateSkeleton(p) end end)
+Players.PlayerRemoving:Connect(function(p) SkeletonCache[p] = nil end)
 
-Players.PlayerAdded:Connect(function(p)
-    if p ~= LP then CreateSkeleton(p) end
-end)
-
-Players.PlayerRemoving:Connect(function(p)
-    if SkeletonCache[p] then
-        for _, line in pairs(SkeletonCache[p]) do
-            line:Remove()
-        end
-        SkeletonCache[p] = nil
-    end
-end)
-
--- Główna pętla renderująca
 RunService.RenderStepped:Connect(function()
+    if not _G.SETTINGS.SkeletonEnabled then
+        for _, lines in pairs(SkeletonCache) do
+            for _, l in pairs(lines) do l.Visible = false end
+        end
+        return
+    end
+
+    -- Optymalizacja: Przetwarzaj tylko co drugą klatkę
+    SkipFrame = SkipFrame + 1
+    if SkipFrame % 2 ~= 0 then return end 
+
     for p, lines in pairs(SkeletonCache) do
         local char = p.Character
-        
-        -- Sprawdzanie czy funkcja jest włączona i czy gracz żyje
-        if _G.SETTINGS.SkeletonEnabled and char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
+        if char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
             for i, conn in pairs(Connections) do
-                local part1 = char:FindFirstChild(conn[1])
-                local part2 = char:FindFirstChild(conn[2])
-                local line = lines[i]
-
-                if part1 and part2 then
-                    local pos1, vis1 = Camera:WorldToViewportPoint(part1.Position)
-                    local pos2, vis2 = Camera:WorldToViewportPoint(part2.Position)
-
+                local p1, p2 = char:FindFirstChild(conn[1]), char:FindFirstChild(conn[2])
+                if p1 and p2 then
+                    local pos1, vis1 = Camera:WorldToViewportPoint(p1.Position)
+                    local pos2, vis2 = Camera:WorldToViewportPoint(p2.Position)
+                    
                     if vis1 and vis2 then
-                        line.From = Vector2.new(pos1.X, pos1.Y)
-                        line.To = Vector2.new(pos2.X, pos2.Y)
-                        line.Color = _G.SETTINGS.AccentColor
-                        line.Visible = true
-                    else
-                        line.Visible = false
-                    end
-                else
-                    line.Visible = false
-                end
+                        lines[i].From = Vector2.new(pos1.X, pos1.Y)
+                        lines[i].To = Vector2.new(pos2.X, pos2.Y)
+                        lines[i].Color = _G.SETTINGS.AccentColor
+                        lines[i].Visible = true
+                    else lines[i].Visible = false end
+                else lines[i].Visible = false end
             end
         else
-            -- Ukryj linie, jeśli gracz nie żyje lub funkcja jest wyłączona
-            for _, line in pairs(lines) do
-                line.Visible = false
-            end
+            for _, l in pairs(lines) do l.Visible = false end
         end
     end
 end)
