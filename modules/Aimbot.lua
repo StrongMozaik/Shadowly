@@ -28,15 +28,20 @@ RunService.RenderStepped:Connect(function()
     if _G.SETTINGS.AimbotEnabled and IsPressed then
         local mouse = UIS:GetMouseLocation()
         local bestTarget, bestDist = GetClosestTarget()
+        
         if not LockedTarget or (LockedTarget.Character and LockedTarget.Character.Humanoid.Health <= 0) then
             LockedTarget = bestTarget
         else
-            local currentPos = Camera:WorldToViewportPoint(LockedTarget.Character.HumanoidRootPart.Position)
-            local currentDist = (Vector2.new(currentPos.X, currentPos.Y) - mouse).Magnitude
-            if bestTarget and bestTarget ~= LockedTarget and bestDist < (currentDist * 0.7) then
-                LockedTarget = bestTarget
+            local hrp = LockedTarget.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local currentPos = Camera:WorldToViewportPoint(hrp.Position)
+                local currentDist = (Vector2.new(currentPos.X, currentPos.Y) - mouse).Magnitude
+                if bestTarget and bestTarget ~= LockedTarget and bestDist < (currentDist * 0.7) then
+                    LockedTarget = bestTarget
+                end
             end
         end
+
         if LockedTarget and LockedTarget.Character then
             local hrp = LockedTarget.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
