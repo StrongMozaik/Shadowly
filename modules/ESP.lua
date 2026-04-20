@@ -1,4 +1,4 @@
--- [[ SHADOW HUB: ESP MODULE (FIXED TEXT COLOR) ]] --
+-- [[ SHADOW HUB: ESP MODULE (ULTRA FORCE WHITE TEXT) ]] --
 local Players = game:GetService("Players")
 local Camera = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
@@ -6,7 +6,7 @@ local LP = Players.LocalPlayer
 local Cache = {}
 
 local function CreateDrawings(p)
-    Cache[p] = {
+    local obj = {
         MainBox = Drawing.new("Square"), 
         InOutline = Drawing.new("Square"), 
         OutOutline = Drawing.new("Square"),
@@ -15,18 +15,19 @@ local function CreateDrawings(p)
         Nametag = Drawing.new("Text"), 
         Distance = Drawing.new("Text")
     }
-    local obj = Cache[p]
     
-    -- Ustawienia napisów (Tutaj naprawiamy kolor)
+    -- Konfiguracja bazowa
     obj.Nametag.Size = 14
     obj.Nametag.Outline = true
     obj.Nametag.Center = true
-    obj.Nametag.Color = Color3.new(1, 1, 1) -- BIAŁY
+    obj.Nametag.Visible = false
     
     obj.Distance.Size = 13
     obj.Distance.Outline = true
     obj.Distance.Center = true
-    obj.Distance.Color = Color3.new(1, 1, 1) -- BIAŁY
+    obj.Distance.Visible = false
+
+    Cache[p] = obj
 end
 
 for _, p in pairs(Players:GetPlayers()) do if p ~= LP then CreateDrawings(p) end end
@@ -53,38 +54,43 @@ RunService.RenderStepped:Connect(function()
                 local sY = math.abs(topPos.Y - bottomPos.Y)
                 local sX, bX, bY = sY * 0.6, hrpPos.X - (sY * 0.6) / 2, topPos.Y
                 
-                -- Box
-                local vis = _G.SETTINGS.BoxVisible
-                obj.MainBox.Visible = vis; obj.InOutline.Visible = vis; obj.OutOutline.Visible = vis
-                if vis then
-                    obj.MainBox.Size = Vector2.new(sX, sY); obj.MainBox.Position = Vector2.new(bX, bY); obj.MainBox.Color = Color3.new(1,1,1)
-                    obj.InOutline.Size = Vector2.new(sX-2, sY-2); obj.InOutline.Position = Vector2.new(bX+1, bY+1); obj.InOutline.Color = Color3.new(0,0,0)
-                    obj.OutOutline.Size = Vector2.new(sX+2, sY+2); obj.OutOutline.Position = Vector2.new(bX-1, bY-1); obj.OutOutline.Color = Color3.new(0,0,0)
+                -- Rysowanie Boxa
+                if _G.SETTINGS.BoxVisible then
+                    obj.MainBox.Size = Vector2.new(sX, sY); obj.MainBox.Position = Vector2.new(bX, bY); obj.MainBox.Color = Color3.new(1,1,1); obj.MainBox.Visible = true
+                    obj.InOutline.Size = Vector2.new(sX-2, sY-2); obj.InOutline.Position = Vector2.new(bX+1, bY+1); obj.InOutline.Color = Color3.new(0,0,0); obj.InOutline.Visible = true
+                    obj.OutOutline.Size = Vector2.new(sX+2, sY+2); obj.OutOutline.Position = Vector2.new(bX-1, bY-1); obj.OutOutline.Color = Color3.new(0,0,0); obj.OutOutline.Visible = true
+                else
+                    obj.MainBox.Visible = false; obj.InOutline.Visible = false; obj.OutOutline.Visible = false
                 end
                 
-                -- Healthbar
-                obj.Healthbar.Visible = _G.SETTINGS.HealthbarVisible; obj.HealthFill.Visible = _G.SETTINGS.HealthbarVisible
+                -- Pasek życia
                 if _G.SETTINGS.HealthbarVisible then
                     local pct = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
-                    obj.Healthbar.Size = Vector2.new(4, sY); obj.Healthbar.Position = Vector2.new(bX-6, bY); obj.Healthbar.Filled = true; obj.Healthbar.Color = Color3.new(0,0,0)
-                    obj.HealthFill.Size = Vector2.new(2, (sY-2) * pct); obj.HealthFill.Position = Vector2.new(bX-5, bY+1+(sY-2)*(1-pct)); obj.HealthFill.Color = Color3.fromHSV(pct*0.3, 1, 1); obj.HealthFill.Filled = true
+                    obj.Healthbar.Size = Vector2.new(4, sY); obj.Healthbar.Position = Vector2.new(bX-6, bY); obj.Healthbar.Color = Color3.new(0,0,0); obj.Healthbar.Filled = true; obj.Healthbar.Visible = true
+                    obj.HealthFill.Size = Vector2.new(2, (sY-2) * pct); obj.HealthFill.Position = Vector2.new(bX-5, bY+1+(sY-2)*(1-pct)); obj.HealthFill.Color = Color3.fromHSV(pct*0.3, 1, 1); obj.HealthFill.Filled = true; obj.HealthFill.Visible = true
+                else
+                    obj.Healthbar.Visible = false; obj.HealthFill.Visible = false
                 end
                 
-                -- Nametags (Nick + HP)
-                obj.Nametag.Visible = _G.SETTINGS.NametagsVisible
+                -- [[ NAPRAWA KOLORU TEKSTU ]] --
                 if _G.SETTINGS.NametagsVisible then
-                    obj.Nametag.Position = Vector2.new(hrpPos.X, bY-18)
                     obj.Nametag.Text = p.Name .. " | " .. math.floor(hum.Health) .. "HP"
-                    obj.Nametag.Color = Color3.new(1, 1, 1) -- Potwierdzenie bieli co klatkę
+                    obj.Nametag.Position = Vector2.new(hrpPos.X, bY-18)
+                    obj.Nametag.Color = Color3.fromRGB(255, 255, 255) -- WYMUSZANIE BIELI
+                    obj.Nametag.OutlineColor = Color3.fromRGB(0, 0, 0)
+                    obj.Nametag.Visible = true
+                else
+                    obj.Nametag.Visible = false
                 end
                 
-                -- Distance
-                obj.Distance.Visible = _G.SETTINGS.DistanceVisible
                 if _G.SETTINGS.DistanceVisible then
                     local dist = math.floor((Camera.CFrame.Position - hrp.Position).Magnitude)
-                    obj.Distance.Position = Vector2.new(hrpPos.X, bottomPos.Y + 5)
                     obj.Distance.Text = dist .. "m"
-                    obj.Distance.Color = Color3.new(1, 1, 1)
+                    obj.Distance.Position = Vector2.new(hrpPos.X, bottomPos.Y + 5)
+                    obj.Distance.Color = Color3.fromRGB(255, 255, 255) -- WYMUSZANIE BIELI
+                    obj.Distance.Visible = true
+                else
+                    obj.Distance.Visible = false
                 end
             else 
                 for _,v in pairs(obj) do v.Visible = false end 
