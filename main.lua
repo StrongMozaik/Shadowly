@@ -14,5 +14,4 @@ Load("Aimbot")
 Load("ESP")
 Load("SkeletonESP")
 Load("Tracers")
-Load("Chams") -- Załadowanie neonowych rąk
 Load("Gui")
