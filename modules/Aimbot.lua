@@ -1,4 +1,4 @@
--- [[ SHADOW HUB: AIMBOT MODULE (FIXED FOV RADIUS) ]] --
+-- [[ SHADOW HUB: AIMBOT MODULE (ULTRA TRACKING & CLOSE RANGE FIX) ]] --
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local LP = game:GetService("Players").LocalPlayer
@@ -11,31 +11,43 @@ FOV_C.Thickness = 1
 FOV_C.Transparency = 1
 FOV_C.Filled = false
 
--- [[ POPRAWIONA FUNKCJA CELOWANIA ]] --
+-- [[ ULEPSZONA FUNKCJA SZUKANIA (GŁOWA + TORSO) ]] --
 local function GetClosestTarget()
     local mouse = UIS:GetMouseLocation()
-    local maxDist = _G.SETTINGS.FOV -- To jest limit
+    local maxDist = _G.SETTINGS.FOV
     local closestDist = maxDist
     local target = nil
     
     for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LP and p.Character and p.Character:FindFirstChild("HumanoidRootPart") and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-            local pos, onScreen = Camera:WorldToViewportPoint(p.Character.HumanoidRootPart.Position)
-            if onScreen then
-                local dist = (Vector2.new(pos.X, pos.Y) - mouse).Magnitude
-                -- KLUCZOWA ZMIANA: Sprawdzamy czy dist jest mniejszy niż ustawiony FOV
-                if dist <= maxDist and dist < closestDist then
-                    closestDist = dist
-                    target = p
+        if p ~= LP and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+            local head = p.Character:FindFirstChild("Head")
+            local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+            
+            if head and hrp then
+                -- Sprawdzamy oba punkty, żeby łapało z bliska
+                local posHead, headVisible = Camera:WorldToViewportPoint(head.Position)
+                local posHRP, hrpVisible = Camera:WorldToViewportPoint(hrp.Position)
+                
+                if headVisible or hrpVisible then
+                    local distHead = (Vector2.new(posHead.X, posHead.Y) - mouse).Magnitude
+                    local distHRP = (Vector2.new(posHRP.X, posHRP.Y) - mouse).Magnitude
+                    
+                    -- Wybieramy punkt, który jest bliżej środka celownika
+                    local finalDist = math.min(distHead, distHRP)
+                    
+                    if finalDist <= maxDist and finalDist < closestDist then
+                        closestDist = finalDist
+                        target = p
+                    end
                 end
             end
         end
     end
-    return target, closestDist
+    return target
 end
 
 RunService.RenderStepped:Connect(function()
-    -- Aktualizacja wizualna koła
+    -- Wizualizacja FOV
     FOV_C.Position = UIS:GetMouseLocation()
     FOV_C.Radius = _G.SETTINGS.FOV
     FOV_C.Color = _G.SETTINGS.AccentColor
@@ -45,36 +57,36 @@ RunService.RenderStepped:Connect(function()
     
     if _G.SETTINGS.AimbotEnabled and IsPressed then
         local mouse = UIS:GetMouseLocation()
-        local bestTarget, bestDist = GetClosestTarget()
         
-        -- Jeśli mamy już cel, sprawdzamy czy nadal jest w FOV
-        if LockedTarget and LockedTarget.Character and LockedTarget.Character:FindFirstChild("HumanoidRootPart") then
-            local hrp = LockedTarget.Character.HumanoidRootPart
-            local pos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-            local dist = (Vector2.new(pos.X, pos.Y) - mouse).Magnitude
-            
-            -- Jeśli cel ucieknie poza FOV lub zginie, puszczamy go
-            if not onScreen or dist > _G.SETTINGS.FOV or LockedTarget.Character.Humanoid.Health <= 0 then
-                LockedTarget = nil
-            end
-        end
-
-        -- Jeśli nie mamy celu, przypisujemy najlepszy znaleziony w FOV
+        -- Jeśli nie ma celu, szukaj
         if not LockedTarget then
-            LockedTarget = bestTarget
+            LockedTarget = GetClosestTarget()
         end
 
-        -- Ruch do celu
-        if LockedTarget and LockedTarget.Character then
-            local hrp = LockedTarget.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
+        -- Logika Śledzenia (Tracking)
+        if LockedTarget and LockedTarget.Character and LockedTarget.Character:FindFirstChild("HumanoidRootPart") then
+            local hum = LockedTarget.Character:FindFirstChild("Humanoid")
+            local hrp = LockedTarget.Character.HumanoidRootPart
+            
+            -- Sprawdzanie czy cel nadal żyje i jest w zasięgu FOV (z lekkim marginesem na błąd)
+            if hum and hum.Health > 0 then
                 local headPos = hrp.Position + Vector3.new(0, (LockedTarget.Character:GetExtentsSize().Y * (0.5 - _G.SETTINGS.HeadOffset)), 0)
                 local screenPos, onScreen = Camera:WorldToViewportPoint(headPos)
-                if onScreen then
+                local dist = (Vector2.new(screenPos.X, screenPos.Y) - mouse).Magnitude
+                
+                -- Dodajemy margines 1.2x FOV podczas trzymania celu, żeby nie zrywało przy szybkim ruchu
+                if onScreen and dist <= (_G.SETTINGS.FOV * 1.2) then
                     if mousemoverel then
-                        mousemoverel((screenPos.X - mouse.X) * _G.SETTINGS.AimSmooth, (screenPos.Y - mouse.Y) * _G.SETTINGS.AimSmooth)
+                        -- Ulepszony ruch: mnożnik siły śledzenia
+                        local moveX = (screenPos.X - mouse.X) * (1 - _G.SETTINGS.AimSmooth)
+                        local moveY = (screenPos.Y - mouse.Y) * (1 - _G.SETTINGS.AimSmooth)
+                        mousemoverel(moveX, moveY)
                     end
+                else
+                    LockedTarget = nil -- Stracono kontakt/poza FOV
                 end
+            else
+                LockedTarget = nil -- Cel zginął
             end
         end
     else
